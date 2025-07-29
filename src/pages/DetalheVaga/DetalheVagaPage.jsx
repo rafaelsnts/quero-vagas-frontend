@@ -13,21 +13,39 @@ function DetalheVagaPage() {
   const [loading, setLoading] = useState(true);
   const [hasApplied, setHasApplied] = useState(false);
 
+  const [isProfileComplete, setIsProfileComplete] = useState(false);
+  const [checkingProfile, setCheckingProfile] = useState(true);
+
   useEffect(() => {
-    const fetchVaga = async () => {
+    const fetchData = async () => {
       setLoading(true);
+      setCheckingProfile(true);
       try {
-        const response = await api.get(`/vagas/${vagaId}`);
-        setVaga(response.data);
+        const vagaResponse = await api.get(`/vagas/${vagaId}`);
+        setVaga(vagaResponse.data);
+
+        if (isAuthenticated && user.tipoUsuario === "CANDIDATO") {
+          const perfilResponse = await api.get("/perfil/meu-perfil");
+          const perfilData = perfilResponse.data;
+
+          const isComplete =
+            perfilData.perfil &&
+            perfilData.perfil.resumo &&
+            perfilData.perfil.curriculoUrl &&
+            perfilData.experiencias.length > 0 &&
+            perfilData.formacoesAcademicas.length > 0;
+
+          setIsProfileComplete(isComplete);
+        }
       } catch (error) {
         toast.error("Vaga não encontrada ou erro ao carregar.");
-        console.error("Erro ao buscar detalhes da vaga:", error);
       } finally {
         setLoading(false);
+        setCheckingProfile(false);
       }
     };
-    fetchVaga();
-  }, [vagaId]);
+    fetchData();
+  }, [vagaId, isAuthenticated, user]);
 
   const handleCandidatura = async () => {
     try {
@@ -41,19 +59,12 @@ function DetalheVagaPage() {
       if (error.response?.status === 409) {
         setHasApplied(true);
       }
-      console.error(error);
     }
   };
 
-  if (loading) {
-    return (
-      <p className="text-center text-lg text-slate-500">
-        Carregando detalhes da vaga...
-      </p>
-    );
-  }
-
-  if (!vaga) {
+  if (loading)
+    return <p className="text-center">Carregando detalhes da vaga...</p>;
+  if (!vaga)
     return (
       <div className="text-center">
         <h1 className="text-2xl font-bold text-red-600">
@@ -67,7 +78,8 @@ function DetalheVagaPage() {
         </Link>
       </div>
     );
-  }
+
+  const isButtonDisabled = !isProfileComplete || hasApplied || checkingProfile;
 
   return (
     <div className="container mx-auto max-w-4xl bg-white p-8 rounded-lg shadow-lg">
@@ -75,7 +87,12 @@ function DetalheVagaPage() {
         <h1 className="text-4xl font-extrabold text-brand-blue">
           {vaga.titulo}
         </h1>
-        <p className="text-xl text-slate-700 mt-2">{vaga.empresa.nome}</p>
+        <Link
+          to={`/empresas/${vaga.empresaId}`}
+          className="text-xl text-slate-700 mt-2 hover:underline"
+        >
+          {vaga.empresa.nome}
+        </Link>
         <p className="text-md text-slate-500 mt-1">{vaga.localizacao}</p>
       </div>
 
@@ -87,7 +104,6 @@ function DetalheVagaPage() {
           <p className="text-slate-600 leading-relaxed whitespace-pre-wrap">
             {vaga.descricao}
           </p>
-
           <h2 className="text-2xl font-bold text-brand-blue mt-8 mb-4">
             Requisitos
           </h2>
@@ -96,46 +112,63 @@ function DetalheVagaPage() {
           </p>
         </div>
 
-        <div className="bg-slate-50 p-6 rounded-lg">
-          <h3 className="text-lg font-bold text-brand-blue mb-4">Resumo</h3>
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm font-semibold text-slate-600">Salário</p>
-              <p className="text-md font-bold text-brand-purple">
-                {vaga.salario || "A combinar"}
-              </p>
+        <div className="bg-slate-50 p-6 rounded-lg flex flex-col">
+          <div>
+            <h3 className="text-lg font-bold text-brand-blue mb-4">Resumo</h3>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-semibold text-slate-600">Salário</p>
+                <p className="text-md font-bold text-brand-purple">
+                  {vaga.salario || "A combinar"}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-600">
+                  Modalidade
+                </p>
+                <p className="text-md font-bold text-slate-800">
+                  {vaga.modalidade}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-semibold text-slate-600">Modalidade</p>
-              <p className="text-md font-bold text-slate-800">
-                {vaga.modalidade}
-              </p>
-            </div>
+          </div>
 
-            <div className="mt-4">
-              {isAuthenticated ? (
-                user.tipoUsuario === "CANDIDATO" ? (
+          <div className="mt-6 border-t pt-4 flex-grow flex flex-col justify-end">
+            {isAuthenticated ? (
+              user.tipoUsuario === "CANDIDATO" ? (
+                <>
                   <button
                     onClick={handleCandidatura}
-                    disabled={hasApplied}
+                    disabled={isButtonDisabled}
                     className="w-full bg-brand-orange text-white font-bold rounded-lg py-3 hover:opacity-90 disabled:bg-slate-400 disabled:cursor-not-allowed"
                   >
                     {hasApplied ? "Candidatura Enviada" : "Quero me Candidatar"}
                   </button>
-                ) : (
-                  <p className="text-sm text-center text-slate-500">
-                    Apenas candidatos podem se aplicar a vagas.
-                  </p>
-                )
+                  {!isProfileComplete && !checkingProfile && (
+                    <div className="text-center text-sm text-red-600 mt-2">
+                      <p>Seu perfil está incompleto!</p>
+                      <Link
+                        to="/perfil"
+                        className="font-bold underline hover:text-red-700"
+                      >
+                        Complete seu perfil para se candidatar.
+                      </Link>
+                    </div>
+                  )}
+                </>
               ) : (
-                <button
-                  onClick={() => navigate("/login")}
-                  className="w-full bg-brand-orange text-white font-bold rounded-lg py-3 hover:opacity-90"
-                >
-                  Faça Login para se Candidatar
-                </button>
-              )}
-            </div>
+                <p className="text-sm text-center text-slate-500">
+                  Apenas candidatos podem se aplicar a vagas.
+                </p>
+              )
+            ) : (
+              <button
+                onClick={() => navigate("/login")}
+                className="w-full bg-brand-orange text-white font-bold rounded-lg py-3 hover:opacity-90"
+              >
+                Faça Login para se Candidatar
+              </button>
+            )}
           </div>
         </div>
       </div>

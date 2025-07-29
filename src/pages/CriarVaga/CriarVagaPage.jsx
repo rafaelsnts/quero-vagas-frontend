@@ -43,7 +43,6 @@ function CriarVagaPage() {
     event.preventDefault();
     try {
       if (isEditing) {
-        // Se estiver editando, chama a rota PUT que criamos
         await api.put(`/vagas/${vagaId}`, formData);
         toast.success("Vaga atualizada com sucesso!");
       } else {
