@@ -24,7 +24,6 @@ const EyeIcon = () => (
     />
   </svg>
 );
-
 const EyeSlashIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -41,7 +40,6 @@ const EyeSlashIcon = () => (
     />
   </svg>
 );
-
 const CheckIcon = () => (
   <svg
     className="h-4 w-4 text-green-500"
@@ -57,7 +55,6 @@ const CheckIcon = () => (
     />
   </svg>
 );
-
 const XIcon = () => (
   <svg
     className="h-4 w-4 text-red-500"
@@ -97,7 +94,6 @@ function CadastroCandidatoPage() {
       hasNumber: /\d/.test(password),
       hasSpecialChar: /[@$!%*?&]/.test(password),
     };
-
     setPasswordValidation(validation);
     return Object.values(validation).every(Boolean);
   };
@@ -212,33 +208,35 @@ function CadastroCandidatoPage() {
             />
           </div>
 
-          <div className="relative">
+          <div>
             <label
               htmlFor="senha"
               className="block text-sm font-medium text-slate-700 mb-1"
             >
               Senha
             </label>
-            <input
-              type={showPassword ? "text" : "password"}
-              id="senha"
-              value={senha}
-              onChange={handlePasswordChange}
-              required
-              className={`w-full p-3 border rounded-lg pr-10 focus:ring-2 focus:ring-brand-purple focus:border-transparent ${
-                senha && !isPasswordValid()
-                  ? "border-red-300"
-                  : "border-slate-300"
-              }`}
-              placeholder="Digite sua senha"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 top-6 pr-3 flex items-center text-slate-500 hover:text-slate-700"
-            >
-              {showPassword ? <EyeSlashIcon /> : <EyeIcon />}
-            </button>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="senha"
+                value={senha}
+                onChange={handlePasswordChange}
+                required
+                className={`w-full p-3 border rounded-lg pr-10 focus:ring-2 focus:ring-brand-purple focus:border-transparent ${
+                  senha && !isPasswordValid()
+                    ? "border-red-300"
+                    : "border-slate-300"
+                }`}
+                placeholder="Digite sua senha"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-700"
+              >
+                {showPassword ? <EyeSlashIcon /> : <EyeIcon />}
+              </button>
+            </div>
 
             {senha && (
               <div className="mt-2">
@@ -347,34 +345,35 @@ function CadastroCandidatoPage() {
             )}
           </div>
 
-          <div className="relative">
+          <div>
             <label
               htmlFor="confirmarSenha"
               className="block text-sm font-medium text-slate-700 mb-1"
             >
               Confirmar Senha
             </label>
-            <input
-              type={showPassword ? "text" : "password"}
-              id="confirmarSenha"
-              value={confirmarSenha}
-              onChange={(e) => setConfirmarSenha(e.target.value)}
-              required
-              className={`w-full p-3 border rounded-lg pr-10 focus:ring-2 focus:ring-brand-purple focus:border-transparent ${
-                confirmarSenha && senha !== confirmarSenha
-                  ? "border-red-300"
-                  : "border-slate-300"
-              }`}
-              placeholder="Confirme sua senha"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 top-6 pr-3 flex items-center text-slate-500 hover:text-slate-700"
-            >
-              {showPassword ? <EyeSlashIcon /> : <EyeIcon />}
-            </button>
-
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="confirmarSenha"
+                value={confirmarSenha}
+                onChange={(e) => setConfirmarSenha(e.target.value)}
+                required
+                className={`w-full p-3 border rounded-lg pr-10 focus:ring-2 focus:ring-brand-purple focus:border-transparent ${
+                  confirmarSenha && senha !== confirmarSenha
+                    ? "border-red-300"
+                    : "border-slate-300"
+                }`}
+                placeholder="Confirme sua senha"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-700"
+              >
+                {showPassword ? <EyeSlashIcon /> : <EyeIcon />}
+              </button>
+            </div>
             {confirmarSenha && (
               <div className="mt-1 flex items-center gap-2">
                 {senha === confirmarSenha ? <CheckIcon /> : <XIcon />}

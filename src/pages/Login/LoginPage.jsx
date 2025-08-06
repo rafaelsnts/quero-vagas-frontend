@@ -6,22 +6,25 @@ import { useAuth } from "../../contexts/AuthContext.jsx";
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setLoading(true);
     try {
       await login(email, senha);
       toast.success("Login realizado com sucesso!");
-      setTimeout(() => {
-        navigate("/");
-      }, 1500);
+
+      navigate("/");
     } catch (error) {
       toast.error(
         error.response?.data?.message ||
           "Ocorreu um erro ao tentar fazer login."
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -69,9 +72,10 @@ function LoginPage() {
           <div>
             <button
               type="submit"
-              className="w-full bg-brand-purple text-white font-bold rounded-lg py-3 mt-4 hover:opacity-90"
+              disabled={loading}
+              className="w-full bg-brand-purple text-white font-bold rounded-lg py-3 mt-4 hover:opacity-90 disabled:bg-slate-400"
             >
-              Entrar
+              {loading ? "A entrar..." : "Entrar"}
             </button>
           </div>
         </form>

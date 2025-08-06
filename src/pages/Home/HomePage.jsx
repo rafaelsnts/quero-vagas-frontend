@@ -88,7 +88,7 @@ function HomePage() {
       <section className="bg-slate-100">
         <div className="container mx-auto px-6 py-20 text-center">
           <h1 className="text-4xl md:text-6xl font-extrabold text-brand-blue leading-tight">
-            O seu futuro profissional começa em Camaçari.
+            O seu sucesso profissional começa em Camaçari.
           </h1>
           <p className="mt-4 text-lg md:text-xl text-slate-600 max-w-3xl mx-auto">
             Conectamos os melhores talentos locais com as oportunidades de

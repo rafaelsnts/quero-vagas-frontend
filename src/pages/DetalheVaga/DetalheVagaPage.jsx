@@ -84,16 +84,18 @@ function DetalheVagaPage() {
   return (
     <div className="container mx-auto max-w-4xl bg-white p-8 rounded-lg shadow-lg">
       <div className="border-b pb-4 mb-6">
-        <h1 className="text-4xl font-extrabold text-brand-blue">
+        <h1 className="text-4xl font-extrabold text-brand-blue mb-2">
           {vaga.titulo}
         </h1>
-        <Link
-          to={`/empresas/${vaga.empresaId}`}
-          className="text-xl text-slate-700 mt-2 hover:underline"
-        >
-          {vaga.empresa.nome}
-        </Link>
-        <p className="text-md text-slate-500 mt-1">{vaga.localizacao}</p>
+
+        <p className="text-xl text-slate-700 mt-2">
+          <span className="font-semibold">EMPRESA:</span>{" "}
+          <span to={`/empresas/${vaga.empresaId}`}>
+            {vaga.empresa.user.nome}
+          </span>
+        </p>
+
+        <p className="text-md text-slate-500 mt-2">{vaga.localizacao}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

@@ -1,5 +1,6 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
 const TargetIcon = () => (
   <svg
@@ -57,6 +58,17 @@ const DashboardIcon = () => (
 );
 
 function ParaEmpresasPage() {
+  const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
+
+  const handleAnunciarVagaClick = () => {
+    if (isAuthenticated && user?.tipoUsuario === "EMPRESA") {
+      navigate("/vagas/nova"); // Rota para empresas logadas
+    } else {
+      navigate("/login"); // Rota para visitantes ou candidatos
+    }
+  };
+
   return (
     <div className="bg-white">
       <section className="bg-brand-blue text-white">
@@ -68,12 +80,20 @@ function ParaEmpresasPage() {
             Publique suas vagas e conecte-se com profissionais qualificados da
             nossa região de forma simples, rápida e direta.
           </p>
-          <Link
-            to="/cadastro/empresa"
-            className="mt-8 inline-block bg-brand-orange text-white font-bold rounded-lg px-10 py-4 text-lg hover:opacity-90 transition-opacity"
-          >
-            Anunciar Vaga Agora
-          </Link>
+          <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
+            <button
+              onClick={handleAnunciarVagaClick}
+              className="inline-block bg-brand-orange text-white font-bold rounded-lg px-8 py-4 text-lg hover:opacity-90 transition-opacity"
+            >
+              Anunciar Vaga Agora
+            </button>
+            <Link
+              to="/planos"
+              className="inline-block bg-transparent border-2 border-white text-white font-bold rounded-lg px-8 py-4 text-lg hover:bg-white hover:text-brand-blue transition-colors"
+            >
+              Ver Nossos Planos
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -127,10 +147,10 @@ function ParaEmpresasPage() {
             Junte-se às empresas que estão construindo o futuro de Camaçari.
           </p>
           <Link
-            to="/cadastro/empresa"
+            to="/planos"
             className="mt-8 inline-block bg-brand-purple text-white font-bold rounded-lg px-10 py-4 text-lg hover:opacity-90 transition-opacity"
           >
-            Cadastrar Minha Empresa
+            Conheça Nossos Planos
           </Link>
         </div>
       </section>

@@ -1,31 +1,55 @@
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom"; // Importado
 import JobCard from "../../components/JobCard/JobCard";
 import api from "../../services/api";
 import { toast } from "react-toastify";
 import Pagination from "../../components/Pagination/Pagination.jsx";
 
 function VagasPage() {
+  const [searchParams, setSearchParams] = useSearchParams(); // Adicionado
+
   const [vagas, setVagas] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [termoBusca, setTermoBusca] = useState("");
-  const [filtroModalidade, setFiltroModalidade] = useState("");
+  const [termoBusca, setTermoBusca] = useState(
+    () => searchParams.get("termoBusca") || ""
+  );
+  const [filtroModalidade, setFiltroModalidade] = useState(
+    () => searchParams.get("modalidade") || ""
+  );
+  const [paginaAtual, setPaginaAtual] = useState(() =>
+    parseInt(searchParams.get("page") || "1")
+  );
 
-  const [paginaAtual, setPaginaAtual] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(0);
-
   const [debouncedTermoBusca, setDebouncedTermoBusca] = useState(termoBusca);
 
   useEffect(() => {
     const timerId = setTimeout(() => {
       setDebouncedTermoBusca(termoBusca);
-      setPaginaAtual(1);
+      if (termoBusca !== debouncedTermoBusca) {
+        setPaginaAtual(1);
+      }
     }, 500);
 
     return () => {
       clearTimeout(timerId);
     };
-  }, [termoBusca]);
+  }, [termoBusca, debouncedTermoBusca]);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (debouncedTermoBusca) {
+      params.set("termoBusca", debouncedTermoBusca);
+    }
+    if (filtroModalidade) {
+      params.set("modalidade", filtroModalidade);
+    }
+    if (paginaAtual > 1) {
+      params.set("page", paginaAtual.toString());
+    }
+    setSearchParams(params, { replace: true });
+  }, [debouncedTermoBusca, filtroModalidade, paginaAtual, setSearchParams]);
 
   useEffect(() => {
     const fetchVagas = async () => {
@@ -43,10 +67,12 @@ function VagasPage() {
         }
 
         const response = await api.get(`/vagas?${params.toString()}`);
+        console.log("DADOS RECEBIDOS PELA API:", response.data.vagas);
 
         setVagas(response.data.vagas);
         setTotalPaginas(response.data.totalPaginas);
       } catch (error) {
+        console.error("Erro detalhado ao buscar vagas:", error);
         toast.error("Erro ao carregar vagas.");
       } finally {
         setLoading(false);
@@ -61,10 +87,8 @@ function VagasPage() {
     setPaginaAtual(1);
   };
 
-  if (loading) return <p className="text-center">Carregando vagas...</p>;
-
   return (
-    <div className="container mx-auto px-4">
+    <div className="container mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold text-brand-blue text-center mb-6">
         Encontre sua Próxima Oportunidade
       </h1>
@@ -110,24 +134,29 @@ function VagasPage() {
         </button>
       </div>
 
-      {vagas.length > 0 ? (
+      {loading ? (
+        <p className="text-center text-slate-500 py-10">Carregando vagas...</p>
+      ) : vagas.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {vagas.map((vaga) => (
             <JobCard key={vaga.id} vaga={vaga} />
           ))}
         </div>
       ) : (
-        <p className="text-center text-slate-500">
+        <p className="text-center text-slate-500 py-10">
           Nenhuma vaga encontrada com os filtros selecionados.
         </p>
       )}
 
-      <Pagination
-        paginaAtual={paginaAtual}
-        totalPaginas={totalPaginas}
-        onPageChange={setPaginaAtual}
-      />
+      {totalPaginas > 1 && (
+        <Pagination
+          paginaAtual={paginaAtual}
+          totalPaginas={totalPaginas}
+          onPageChange={setPaginaAtual}
+        />
+      )}
     </div>
   );
 }
+
 export default VagasPage;

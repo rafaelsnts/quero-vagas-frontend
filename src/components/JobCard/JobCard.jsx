@@ -2,11 +2,26 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 function JobCard({ vaga }) {
+  const isDestaque =
+    vaga.destaqueExpiresAt && new Date(vaga.destaqueExpiresAt) > new Date();
+
+  const cardClasses = isDestaque
+    ? "border-yellow-400 shadow-lg"
+    : "border-brand-purple";
+
   return (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 p-6 border-l-4 border-brand-purple">
+    <div
+      className={`relative bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 p-6 border-l-4 ${cardClasses}`}
+    >
+      {isDestaque && (
+        <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-bl-lg rounded-tr-md">
+          DESTAQUE
+        </div>
+      )}
+
       <div>
         <h3 className="text-xl font-bold text-brand-blue">{vaga.titulo}</h3>
-        <p className="text-md text-slate-700 mt-1">{vaga.empresa.nome}</p>
+        <p className="text-md text-slate-700 mt-1">{vaga.empresa.user.nome}</p>
       </div>
       <div className="mt-6 text-right">
         <Link

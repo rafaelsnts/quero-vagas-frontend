@@ -23,6 +23,8 @@ import ForgotPasswordPage from "./pages/ForgotPassword/ForgotPasswordPage.jsx";
 import ResetPasswordPage from "./pages/ResetPassword/ResetPasswordPage.jsx";
 import MinhasCandidaturasPage from "./pages/MinhasCandidaturas/MinhasCandidaturasPage.jsx";
 import ParaEmpresasPage from "./pages/ParaEmpresas/ParaEmpresasPage.jsx";
+import PlanosPage from "./pages/Planos/PlanosPage.jsx";
+import CheckoutSuccessPage from "./pages/CheckoutSuccess/CheckoutSuccessPage.jsx";
 
 import "./index.css";
 
@@ -135,6 +137,8 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      { path: "planos", element: <PlanosPage /> },
+      { path: "checkout-success", element: <CheckoutSuccessPage /> },
     ],
   },
 ]);

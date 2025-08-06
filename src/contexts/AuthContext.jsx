@@ -1,67 +1,111 @@
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  useCallback,
+} from "react";
+import api from "../services/api";
 import { jwtDecode } from "jwt-decode";
-import api from "../services/api.js";
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-
-  const [token, setToken] = useState(sessionStorage.getItem("token"));
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const storedToken = sessionStorage.getItem("token");
+  const [assinatura, setAssinatura] = useState(null);
+  const [assinaturaLoading, setAssinaturaLoading] = useState(false);
 
-    if (storedToken) {
-      try {
-        const decodedUser = jwtDecode(storedToken);
-        setUser(decodedUser);
-        setToken(storedToken);
-        api.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`;
-      } catch (error) {
-        console.error("Token inválido:", error);
-        sessionStorage.removeItem("token");
-      }
+  const fetchSubscription = useCallback(async () => {
+    if (user?.tipoUsuario !== "EMPRESA") {
+      setAssinatura(null);
+      return;
     }
-    setLoading(false);
+
+    setAssinaturaLoading(true);
+    try {
+      const { data } = await api.get("/pagamentos/assinatura-atual");
+      setAssinatura(data);
+    } catch (error) {
+      console.error("Não foi possível buscar a assinatura da empresa.", error);
+      setAssinatura(null);
+    } finally {
+      setAssinaturaLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const bootstrapAuth = () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const decodedUser = jwtDecode(token);
+          if (decodedUser.exp * 1000 > Date.now()) {
+            api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+            setUser(decodedUser);
+          } else {
+            localStorage.removeItem("token");
+          }
+        } catch (error) {
+          console.error("Token inválido:", error);
+          localStorage.removeItem("token");
+        }
+      }
+      setLoading(false);
+    };
+    bootstrapAuth();
   }, []);
+
+  useEffect(() => {
+    fetchSubscription();
+  }, [fetchSubscription]);
 
   const login = async (email, senha) => {
     try {
       const response = await api.post("/auth/login", { email, senha });
-      const { token, user: userData } = response.data;
-
-      sessionStorage.setItem("token", token);
-      setUser(userData);
-      setToken(token);
-
-      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      if (response.data && response.data.token) {
+        const { token } = response.data;
+        localStorage.setItem("token", token);
+        api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        const decodedUser = jwtDecode(token);
+        setUser(decodedUser);
+        return decodedUser;
+      }
     } catch (error) {
-      console.error("Falha no login", error);
+      localStorage.removeItem("token");
+      setUser(null);
+      setAssinatura(null);
       throw error;
     }
   };
 
   const logout = () => {
-    sessionStorage.removeItem("token");
-    setUser(null);
-    setToken(null);
+    localStorage.removeItem("token");
     delete api.defaults.headers.common["Authorization"];
+    setUser(null);
+    setAssinatura(null);
+    window.location.href = "/login";
   };
 
-  const value = {
-    isAuthenticated: !!user,
+  const authContextValue = {
     user,
-    token,
+    isAuthenticated: !!user,
     loading,
     login,
     logout,
+    assinatura,
+    assinaturaLoading,
+    refreshSubscription: fetchSubscription,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+  return (
+    <AuthContext.Provider value={authContextValue}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
+};
 
-export function useAuth() {
+export const useAuth = () => {
   return useContext(AuthContext);
-}
+};

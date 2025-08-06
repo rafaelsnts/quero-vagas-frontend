@@ -54,7 +54,7 @@ function PerfilEmpresaPage() {
           });
         })
         .catch((error) => {
-          console.error("Erro ao carregar perfil:", error); // Debug
+          console.error("Erro ao carregar perfil:", error);
           toast.error("Não foi possível carregar os dados do seu perfil.");
         })
         .finally(() => setLoading(false));
@@ -124,7 +124,7 @@ function PerfilEmpresaPage() {
   if (loading) return <p className="text-center">A carregar...</p>;
 
   const getDisplayLogo = () => {
-    console.log("🖼️ getDisplayLogo - logoUrl atual:", formData.logoUrl); // Debug
+    console.log("🖼️ getDisplayLogo - logoUrl atual:", formData.logoUrl);
 
     if (formData.logoUrl?.startsWith("blob:")) {
       console.log("📱 Usando preview local (blob)");
